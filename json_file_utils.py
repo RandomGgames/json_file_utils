@@ -66,6 +66,44 @@ def write_json_file(file_path: str | Path, data: dict | list | str | int | float
                 logger.exception("Failed to clean up temporary file %s", temp_file_path)
 
 
+def read_json_bytes(data: bytes, *, encoding: str = "utf-8",) -> dict | list | str | int | float | bool | None:
+    """
+    Reads and parses JSON content from a bytes object.
+
+    Args:
+        data: The JSON content as bytes.
+        encoding: Encoding used to decode the bytes.
+
+    Returns:
+        The parsed JSON data.
+
+    Raises:
+        TypeError: If data is not a bytes object.
+        UnicodeDecodeError: If the bytes cannot be decoded using the specified encoding.
+        JSONDecodeError: If the decoded content is not valid JSON.
+        Exception: For any other unexpected errors.
+    """
+    try:
+        if not isinstance(data, bytes):
+            raise TypeError(f"Expected bytes, received {type(data).__name__}")
+
+        text = data.decode(encoding)
+        parsed_data = json.loads(text)
+        return parsed_data
+
+    except UnicodeDecodeError:
+        logger.exception("Failed to decode JSON bytes using encoding \"%s\"", encoding)
+        raise
+
+    except json.JSONDecodeError:
+        logger.exception("Failed to parse JSON from decoded bytes")
+        raise
+
+    except Exception:
+        logger.exception("Failed to read JSON from bytes")
+        raise
+
+
 def load_config(file_path: str | Path, *, encoding: str = "utf-8") -> dict | list | str | int | float | bool | None:
     """
     Alias for read_json_file, specifically for configuration files.
